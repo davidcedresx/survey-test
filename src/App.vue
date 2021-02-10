@@ -13,7 +13,7 @@ export default {
       country: null,
       ready: false,
       affiliateid: null,
-      link: null
+      link: null,
     });
 
     const ids = {
@@ -22,14 +22,19 @@ export default {
     };
 
     onMounted(async () => {
-      const os = getMobileOperatingSystem();
+      try {
+        const os = getMobileOperatingSystem();
 
-      if (!["ios", "android"].includes(os)) {
-        state.error = "Device is not mobile";
+        if (!["ios", "android"].includes(os)) {
+          state.error = "Device is not mobile";
+          return;
+        }
+
+        state.os = os;
+      } catch (error) {
+        state.error = "Could not detect device";
         return;
       }
-
-      state.os = os;
 
       try {
         const response = await getCountry();
@@ -40,66 +45,71 @@ export default {
         return;
       }
 
-      // okay, we got the country and the device is mobile and recognized as one of android or ios
-      state.offerid =
-        ids[state.os][Math.floor(Math.random() * ids[state.os].length)];
+      let URL = "https://mobverify.com/api/v1/?affiliateid=117374";
 
-      let URL = "https://mobverify.com/api/v1/?affiliateid=117374"
+      try {
+        // okay, we got the country and the device is mobile and recognized as one of android or ios
+        state.offerid =
+          ids[state.os][Math.floor(Math.random() * ids[state.os].length)];
 
-      if (state.country !== 'US') {
-        state.foreign = true
-        URL += `&ctype=1`
+        if (state.country !== "US") {
+          state.foreign = true;
+          URL += `&ctype=1`;
+        }
+      } catch (error) {
+        state.error = "Error constructing the link";
+        return;
       }
 
       try {
-        const response = await fetch(URL)
-        const data = await response.json()
-        const { offers } = data
+        const response = await fetch(URL);
+        const data = await response.json();
+        const { offers } = data;
 
-        const indexed_offers = []
+        const indexed_offers = [];
 
-        offers.forEach(offer => {
-          indexed_offers[offer.offerid] = offer
-        })
+        offers.forEach((offer) => {
+          indexed_offers[offer.offerid] = offer;
+        });
 
         // if country is US, it is expected that ALL ids are valid and point to a US offer
         if (!state.foreign) {
-          const valid = [...ids.android, ...ids.iphone].every(id => indexed_offers[id]?.country === 'US')
+          const valid = [...ids.android, ...ids.iphone].every(
+            (id) => indexed_offers[id]?.country === "US"
+          );
 
           if (!valid) {
-            state.error = 'Invalid offerids were supplied for US visitor'
-            return
+            state.error = "Invalid offerids were supplied for US visitor";
+            return;
           }
 
           // okay, so is a US citizen and we have a valid offerId
-          window.location.replace(indexed_offers[state.offerid].link)
+          window.location.replace(indexed_offers[state.offerid].link);
         }
 
         // foreign dude - let's find a list of offers that are valid in such country
         else {
-          let permited_offers = {}
+          let permited_offers = {};
 
-          for(const [id, offer] of Object.entries(indexed_offers)) {
-            if (offer.country === state.country)
-            permited_offers[id] = offer
+          for (const [id, offer] of Object.entries(indexed_offers)) {
+            if (offer.country === state.country) permited_offers[id] = offer;
           }
 
           if (Object.keys(permited_offers).length === 0) {
-            state.error = 'There are no surveys available in your country'
-            return
+            state.error = "There are no surveys available in your country";
+            return;
           }
 
           // okay, so is a non-US citizen with available surveys
-          const permited_ids = Object.keys(permited_offers)
-          const random_offer = permited_ids[Math.floor(Math.random() * permited_ids.length)]
+          const permited_ids = Object.keys(permited_offers);
+          const random_offer =
+            permited_ids[Math.floor(Math.random() * permited_ids.length)];
 
-          window.location.replace(random_offer.link)
+          window.location.replace(random_offer.link);
         }
-
-      }
-      catch(error) {
-        console.log(error)
-        state.error = 'Could not fetch offers'
+      } catch (error) {
+        console.log(error);
+        state.error = "Could not fetch offers";
       }
 
       state.ready = true;
@@ -113,6 +123,7 @@ export default {
 <template>
   <h1 v-if="state.error">{{ state.error }}</h1>
   <loader v-else class="loader" />
+  latest
 </template>
 
 <style scoped>
