@@ -1,6 +1,6 @@
 <script>
 import { getMobileOperatingSystem, getCountry } from "./helpers";
-import { reactive, onMounted, watch } from "vue";
+import { reactive, onMounted } from "vue";
 import Loader from "./components/Loader.vue";
 
 export default {
@@ -72,7 +72,7 @@ export default {
           }
 
           // okay, so is a US citizen and we have a valid offerId
-          state.link = indexed_offers[state.offerid]
+          window.location.replace(indexed_offers[state.offerid].link)
         }
 
         // foreign dude - let's find a list of offers that are valid in such country
@@ -93,7 +93,7 @@ export default {
           const permited_ids = Object.keys(permited_offers)
           const random_offer = permited_ids[Math.floor(Math.random() * permited_ids.length)]
 
-          state.link = random_offer.link
+          window.location.replace(random_offer.link)
         }
 
       }
@@ -105,10 +105,6 @@ export default {
       state.ready = true;
     });
 
-    watch(() => state.link, () => {
-      window.location.href = state.link
-    })
-
     return { state };
   },
 };
@@ -117,7 +113,6 @@ export default {
 <template>
   <h1 v-if="state.error">{{ state.error }}</h1>
   <loader v-else class="loader" />
-  <!-- {{ state }} -->
 </template>
 
 <style scoped>
