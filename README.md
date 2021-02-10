@@ -1,24 +1,9 @@
-# hello-world
+# Challenge
 
-## Project setup
-```
-npm install
-```
+Features
 
-### Compiles and hot-reloads for development
-```
-npm run serve
-```
+- Detection of user mobile device
 
-### Compiles and minifies for production
-```
-npm run build
-```
+- Detection of user country / location
 
-### Lints and fixes files
-```
-npm run lint
-```
-
-### Customize configuration
-See [Configuration Reference](https://cli.vuejs.org/config/).
+- API consumption
