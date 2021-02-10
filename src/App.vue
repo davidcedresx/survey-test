@@ -1,6 +1,6 @@
 <script>
 import { getMobileOperatingSystem, getCountry } from "./helpers";
-import { reactive, onMounted, watch, watchEffect } from "vue";
+import { reactive, onMounted, watch } from "vue";
 import Loader from "./components/Loader.vue";
 
 export default {
